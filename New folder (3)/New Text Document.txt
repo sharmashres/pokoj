@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Selection</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .container { margin-top: 50px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Select a Language</h2>
+        <select id="languageSelect" onchange="showOptions()">
+            <option value="">-- Choose a Language --</option>
+            <option value="C">C</option>
+            <option value="PYTHON">Spanish</option>
+            <option value="french">French</option>
+        </select>
+        
+        <div id="options" class="hidden">
+            <h3>Choose an Option</h3>
+            <select id="optionSelect">
+                <!-- Options will be added dynamically -->
+            </select>
+        </div>
+    </div>
+    
+    <script>
+        function showOptions() {
+            const language = document.getElementById("languageSelect").value;
+            const optionsDiv = document.getElementById("options");
+            const optionSelect = document.getElementById("optionSelect");
+            
+            const options = {
+                english: ["Grammar", "Vocabulary", "Pronunciation"],
+                spanish: ["ME", "U", "Pronunciación"],
+                french: ["Grammaire", "PIKABO", "Prononciation"]
+            };
+            
+            if (language) {
+                optionSelect.innerHTML = "";
+                options[language].forEach(option => {
+                    let opt = document.createElement("option");
+                    opt.value = option.toLowerCase();
+                    opt.textContent = option;
+                    optionSelect.appendChild(opt);
+                });
+                optionsDiv.classList.remove("hidden");
+            } else {
+                optionsDiv.classList.add("hidden");
+            }
+        }
+    </script>
+</body>
+</html>

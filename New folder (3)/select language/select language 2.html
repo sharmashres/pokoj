@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enhanced Dropdown with Links</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .dropdown-button {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .dropdown-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .dropdown-content a:hover {
+      background-color: #e2e8f0;
+      color: #1a202c;
+    }
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
+  <h1 class="text-4xl font-extrabold text-gray-900 mb-8 animate-pulse">Select a Language</h1>
+  <div class="flex flex-wrap justify-center gap-4">
+    <div class="dropdown inline-block relative">
+      <button class="dropdown-button bg-blue-600 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-700">C</button>
+      <div class="dropdown-content absolute hidden bg-white shadow-lg rounded-lg mt-2">
+        <a href="file:///C:/Users/praku/OneDrive/Desktop/trial5.html" target="_blank" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">ARRAY</a>
+        <a href="https://www.facebook.com" target="_blank" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">VARIABLES</a>
+        <a href="https://www.youtube.com" target="_blank" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">FUNCTIONS</a>
+      </div>
+    </div>
+    <div class="dropdown inline-block relative">
+      <button class="dropdown-button bg-green-600 text-white font-bold py-2 px-6 rounded-full hover:bg-green-700">PYTHON</button>
+      <div class="dropdown-content absolute hidden bg-white shadow-lg rounded-lg mt-2">
+        <a href="file:///C:/Users/praku/OneDrive/Desktop/trial5.html" target="_blank" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">VARIABLES</a>
+        <a href="https://www.facebook.com" target="_blank" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">TUPLE</a>
+        <a href="https://www.youtube.com" target="_blank" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">LIST</a>
+      </div>
+    </div>
+    <div class="dropdown inline-block relative">
+      <button class="dropdown-button bg-red-600 text-white font-bold py-2 px-6 rounded-full hover:bg-red-700">C++</button>
+      <div class="dropdown-content absolute hidden bg-white shadow-lg rounded-lg mt-2">
+        <a href="file:///C:/Users/praku/OneDrive/Desktop/trial5.html" target="_blank" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">VARIABLES</a>
+        <a href="https://www.facebook.com" target="_blank" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">FUNCTIONS</a>
+        <a href="https://www.youtube.com" target="_blank" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">LIST</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
