@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educational Quiz Game</title>
+    <style>
+        body {
+             font-family: 'Poppins', sans-serif;
+            background-color: white;
+            color: #333;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #f7f7f7;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            position: relative;
+            width: 350px;
+        }
+        .question {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        .options button {
+            display: block;
+            background: #ffcc00;
+            border: none;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        .options button:hover {
+            background: #ff9900;
+        }
+        .options button:disabled {
+            background: grey;
+            cursor: not-allowed;
+        }
+        .feedback {
+            font-size: 18px;
+            margin-top: 10px;
+            display: none;
+        }
+        .score {
+            margin-top: 10px;
+            font-size: 18px;
+        }
+        .play-again {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="difficulty-selection">
+        <h1>Select Difficulty</h1>
+        <div class="difficulty">
+            <button onclick="setDifficulty('easy')">Easy</button>
+            <button onclick="setDifficulty('medium')">Medium</button>
+            <button onclick="setDifficulty('hard')">Hard</button>
+        </div>
+    </div>
+
+    <div class="container" id="quiz-container" style="display: none;">
+        <h1>Educational Quiz Game</h1>
+        <p id="progress">Question 1 of 10</p>
+        <p id="timer">Time Left: 10s</p>
+        <p class="question" id="question"></p>
+        <div class="options" id="options"></div>
+        <p class="feedback" id="feedback"></p>
+        <p class="score" id="score">Score: 0</p>
+        <button class="play-again" id="play-again" onclick="reselectDifficulty()">Play Again</button>
+    </div>
+
+    <script>
+        const questions = {
+
+easy: [
+    { question: "Which keyword is used to declare a variable in C?", options: ["int", "var", "let"], answer: "int" },
+    { question: "What is the default value of an uninitialized integer variable in C?", options: ["0", "undefined", "garbage value"], answer: "garbage value" },
+    { question: "Which of the following is a valid variable name in C?", options: ["1var", "_var", "var-name"], answer: "_var" },
+    { question: "Which of the following correctly declares a float variable in C?", options: ["int x;", "float x;", "char x;"], answer: "float x;" },
+    { question: "What is the size of an int variable on a 32-bit system?", options: ["2 bytes", "4 bytes", "8 bytes"], answer: "4 bytes" }
+],
+
+medium: [
+    { question: "How do you declare a constant variable in C?", options: ["const int x;", "constant int x;", "final int x;"], answer: "const int x;" },
+    { question: "What is the scope of a variable declared inside a function?", options: ["Global", "Local", "Static"], answer: "Local" },
+    { question: "What is the correct way to assign a value to a variable in C?", options: ["x = 10;", "x == 10;", "x := 10;"], answer: "x = 10;" },
+    { question: "Which operator is used to access the address of a variable in C?", options: ["&", "*", "%"], answer: "&" },
+    { question: "What is the output of printf('%d', sizeof(char)); in C?", options: ["1", "2", "4"], answer: "1" }
+],
+
+hard: [
+    { question: "What is the difference between 'static' and 'extern' variables in C?", options: ["Scope", "Memory Location", "Data Type"], answer: "Scope" },
+    { question: "Which storage class has a lifetime throughout the program execution?", options: ["auto", "static", "register"], answer: "static" },
+    { question: "What does the keyword 'volatile' indicate when used with a variable?", options: ["Variable value may change unexpectedly", "Variable is read-only", "Variable is constant"], answer: "Variable value may change unexpectedly" },
+    { question: "What will happen if a global variable and a local variable have the same name in C?", options: ["Local variable takes precedence", "Global variable takes precedence", "Compilation error"], answer: "Local variable takes precedence" },
+    { question: "Which keyword can be used to explicitly hide a global variable within a function?", options: ["static", "auto", "extern"], answer: "auto" }
+]
+};
+
+            
+
+        let score = 0;
+        let currentQuestionIndex = 0;
+        let shuffledQuestions = [];
+        let selectedDifficulty = "";
+        let timer;
+        let timeLeft = 15;
+
+        function setDifficulty(level) {
+            selectedDifficulty = level;
+            document.getElementById('difficulty-selection').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            startQuiz();
+        }
+
+        function startQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            shuffledQuestions = [...questions[selectedDifficulty]].sort(() => Math.random() - 0.5);
+            document.getElementById('score').textContent = "Score: 0";
+            document.getElementById('play-again').style.display = 'none';
+            loadQuestion();
+        }
+
+        function startTimer() {
+            timeLeft = 10;
+            document.getElementById('timer').textContent = `Time Left: ${timeLeft}s`;
+
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = `Time Left: ${timeLeft}s`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    timeUp();
+                }
+            }, 1000);
+        }
+
+        function timeUp() {
+            document.getElementById('feedback').textContent = "⏳ Time's up! Moving to next question...";
+            document.getElementById('feedback').style.display = 'block';
+            document.querySelectorAll('.options button').forEach(btn => btn.disabled = true);
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                loadQuestion();
+            }, 1500);
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                clearInterval(timer);
+                startTimer();
+
+                const questionData = shuffledQuestions[currentQuestionIndex];
+                document.getElementById('question').textContent = questionData.question;
+                document.getElementById('progress').textContent = `Question ${currentQuestionIndex + 1} of ${shuffledQuestions.length}`;
+                document.getElementById('options').innerHTML = '';
+                document.getElementById('feedback').style.display = 'none';
+
+                questionData.options.forEach(option => {
+                    let button = document.createElement('button');
+                    button.textContent = option;
+                    button.onclick = () => {
+                        clearInterval(timer);
+                        checkAnswer(option, button);
+                    };
+                    document.getElementById('options').appendChild(button);
+                });
+            } else {
+                clearInterval(timer);
+                document.getElementById('question').textContent = "Quiz Completed!";
+                document.getElementById('progress').textContent = `Final Score: ${score}/${shuffledQuestions.length}`;
+                document.getElementById('play-again').style.display = 'block';
+            }
+        }
+
+        function checkAnswer(selected, button) {
+            let correctAnswer = shuffledQuestions[currentQuestionIndex].answer;
+            document.querySelectorAll('.options button').forEach(btn => btn.disabled = true);
+            let feedbackElement = document.getElementById('feedback');
+
+            if (selected === correctAnswer) {
+                button.style.background = '#4CAF50';
+                feedbackElement.textContent = "✅ Correct!";
+                score++;
+                document.getElementById('score').textContent = `Score: ${score}`;
+            } else {
+                button.style.background = '#FF5733';
+                feedbackElement.textContent = `❌ Wrong! Correct answer: ${correctAnswer}`;
+            }
+
+            feedbackElement.style.display = 'block';
+            setTimeout(() => { currentQuestionIndex++; loadQuestion(); }, 1500);
+        }
+        function restartQuiz() {
+            startQuiz();
+        }
+
+        function reselectDifficulty() {
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('difficulty-selection').style.display = 'block';
+         
+        }
+    </script>
+</body>
+</html>
