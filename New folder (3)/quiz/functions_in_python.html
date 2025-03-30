@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educational Quiz Game</title>
+    <style>
+        body {
+             font-family: 'Poppins', sans-serif;
+            background-color: white;
+            color: #333;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #f7f7f7;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            position: relative;
+            width: 350px;
+        }
+        .question {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        .options button {
+            display: block;
+            background: #ffcc00;
+            border: none;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        .options button:hover {
+            background: #ff9900;
+        }
+        .options button:disabled {
+            background: grey;
+            cursor: not-allowed;
+        }
+        .feedback {
+            font-size: 18px;
+            margin-top: 10px;
+            display: none;
+        }
+        .score {
+            margin-top: 10px;
+            font-size: 18px;
+        }
+        .play-again {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="difficulty-selection">
+        <h1>Select Difficulty</h1>
+        <div class="difficulty">
+            <button onclick="setDifficulty('easy')">Easy</button>
+            <button onclick="setDifficulty('medium')">Medium</button>
+            <button onclick="setDifficulty('hard')">Hard</button>
+        </div>
+    </div>
+
+    <div class="container" id="quiz-container" style="display: none;">
+        <h1>Educational Quiz Game</h1>
+        <p id="progress">Question 1 of 10</p>
+        <p id="timer">Time Left: 10s</p>
+        <p class="question" id="question"></p>
+        <div class="options" id="options"></div>
+        <p class="feedback" id="feedback"></p>
+        <p class="score" id="score">Score: 0</p>
+        <button class="play-again" id="play-again" onclick="reselectDifficulty()">Play Again</button>
+    </div>
+
+    <script>
+        const questions = {
+
+        easy: [
+            {"question": "Which keyword is used to define a function in Python?", "options": ["def", "func", "define"], "answer": "def"},
+            {"question": "What is the default return value of a function that does not return anything?", "options": ["None", "0", "Empty string"], "answer": "None"},
+            {"question": "Which statement is used to return a value from a function?", "options": ["return", "yield", "print"], "answer": "return"},
+            {"question": "What is the correct syntax for defining a function in Python?", "options": ["def my_func():", "function my_func():", "define my_func():"], "answer": "def my_func():"},
+            {"question": "What is a function parameter?", "options": ["A variable inside a function", "A value passed to a function", "A loop inside a function"], "answer": "A value passed to a function"}
+        ],
+
+        medium: [
+            {"question": "What is the difference between a function argument and a function parameter?", "options": ["Arguments are actual values, parameters are placeholders", "They are the same", "Parameters are actual values, arguments are placeholders"], "answer": "Arguments are actual values, parameters are placeholders"},
+            {"question": "Which keyword is used to define a lambda function in Python?", "options": ["lambda", "def", "func"], "answer": "lambda"},
+            {"question": "What does *args allow a function to do?", "options": ["Accept any number of positional arguments", "Accept keyword arguments", "Return multiple values"], "answer": "Accept any number of positional arguments"},
+            {"question": "What does **kwargs allow a function to do?", "options": ["Accept any number of keyword arguments", "Accept positional arguments", "Return multiple values"], "answer": "Accept any number of keyword arguments"},
+            {"question": "What is a recursive function?", "options": ["A function that calls itself", "A function that returns multiple values", "A function that takes no arguments"], "answer": "A function that calls itself"}
+        ],
+
+        hard: [
+            {"question": "What is the main advantage of using recursion over loops?", "options": ["Simplifies code for problems like tree traversal", "Recursion is always faster", "Loops cannot be used for complex problems"], "answer": "Simplifies code for problems like tree traversal"},
+            {"question": "What is the purpose of the ‘global’ keyword in Python functions?", "options": ["To modify a global variable inside a function", "To create a new global variable", "To return a global variable"], "answer": "To modify a global variable inside a function"},
+            {"question": "Which built-in function applies a function to every element in an iterable?", "options": ["map()", "filter()", "reduce()"], "answer": "map()"},
+            {"question": "Which function is used to execute another function after a delay?", "options": ["setTimeout()", "time.sleep()", "delay()"], "answer": "time.sleep()"},
+            {"question": "What is function memoization?", "options": ["Caching results of expensive function calls", "Calling a function inside itself", "Using multiple functions together"], "answer": "Caching results of expensive function calls"}
+        ]
+        };
+            
+
+        let score = 0;
+        let currentQuestionIndex = 0;
+        let shuffledQuestions = [];
+        let selectedDifficulty = "";
+        let timer;
+        let timeLeft = 15;
+
+        function setDifficulty(level) {
+            selectedDifficulty = level;
+            document.getElementById('difficulty-selection').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            startQuiz();
+        }
+
+        function startQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            shuffledQuestions = [...questions[selectedDifficulty]].sort(() => Math.random() - 0.5);
+            document.getElementById('score').textContent = "Score: 0";
+            document.getElementById('play-again').style.display = 'none';
+            loadQuestion();
+        }
+
+        function startTimer() {
+            timeLeft = 10;
+            document.getElementById('timer').textContent = `Time Left: ${timeLeft}s`;
+
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = `Time Left: ${timeLeft}s`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    timeUp();
+                }
+            }, 1000);
+        }
+
+        function timeUp() {
+            document.getElementById('feedback').textContent = "⏳ Time's up! Moving to next question...";
+            document.getElementById('feedback').style.display = 'block';
+            document.querySelectorAll('.options button').forEach(btn => btn.disabled = true);
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                loadQuestion();
+            }, 1500);
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                clearInterval(timer);
+                startTimer();
+
+                const questionData = shuffledQuestions[currentQuestionIndex];
+                document.getElementById('question').textContent = questionData.question;
+                document.getElementById('progress').textContent = `Question ${currentQuestionIndex + 1} of ${shuffledQuestions.length}`;
+                document.getElementById('options').innerHTML = '';
+                document.getElementById('feedback').style.display = 'none';
+
+                questionData.options.forEach(option => {
+                    let button = document.createElement('button');
+                    button.textContent = option;
+                    button.onclick = () => {
+                        clearInterval(timer);
+                        checkAnswer(option, button);
+                    };
+                    document.getElementById('options').appendChild(button);
+                });
+            } else {
+                clearInterval(timer);
+                document.getElementById('question').textContent = "Quiz Completed!";
+                document.getElementById('progress').textContent = `Final Score: ${score}/${shuffledQuestions.length}`;
+                document.getElementById('play-again').style.display = 'block';
+            }
+        }
+
+        function checkAnswer(selected, button) {
+            let correctAnswer = shuffledQuestions[currentQuestionIndex].answer;
+            document.querySelectorAll('.options button').forEach(btn => btn.disabled = true);
+            let feedbackElement = document.getElementById('feedback');
+
+            if (selected === correctAnswer) {
+                button.style.background = '#4CAF50';
+                feedbackElement.textContent = "✅ Correct!";
+                score++;
+                document.getElementById('score').textContent = `Score: ${score}`;
+            } else {
+                button.style.background = '#FF5733';
+                feedbackElement.textContent = `❌ Wrong! Correct answer: ${correctAnswer}`;
+            }
+
+            feedbackElement.style.display = 'block';
+            setTimeout(() => { currentQuestionIndex++; loadQuestion(); }, 1500);
+        }
+        function restartQuiz() {
+            startQuiz();
+        }
+
+        function reselectDifficulty() {
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('difficulty-selection').style.display = 'block';
+         
+        }
+    </script>
+</body>
+</html>

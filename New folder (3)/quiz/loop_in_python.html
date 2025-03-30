@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educational Quiz Game</title>
+    <style>
+        body {
+             font-family: 'Poppins', sans-serif;
+            background-color: white;
+            color: #333;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #f7f7f7;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            position: relative;
+            width: 350px;
+        }
+        .question {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        .options button {
+            display: block;
+            background: #ffcc00;
+            border: none;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        .options button:hover {
+            background: #ff9900;
+        }
+        .options button:disabled {
+            background: grey;
+            cursor: not-allowed;
+        }
+        .feedback {
+            font-size: 18px;
+            margin-top: 10px;
+            display: none;
+        }
+        .score {
+            margin-top: 10px;
+            font-size: 18px;
+        }
+        .play-again {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="difficulty-selection">
+        <h1>Select Difficulty</h1>
+        <div class="difficulty">
+            <button onclick="setDifficulty('easy')">Easy</button>
+            <button onclick="setDifficulty('medium')">Medium</button>
+            <button onclick="setDifficulty('hard')">Hard</button>
+        </div>
+    </div>
+
+    <div class="container" id="quiz-container" style="display: none;">
+        <h1>Educational Quiz Game</h1>
+        <p id="progress">Question 1 of 10</p>
+        <p id="timer">Time Left: 10s</p>
+        <p class="question" id="question"></p>
+        <div class="options" id="options"></div>
+        <p class="feedback" id="feedback"></p>
+        <p class="score" id="score">Score: 0</p>
+        <button class="play-again" id="play-again" onclick="reselectDifficulty()">Play Again</button>
+    </div>
+
+    <script>
+        const questions = {
+
+        easy: [
+            {"question": "Which loop is used to iterate over a sequence (like a list, tuple, or string) in Python?", "options": ["for loop", "while loop", "do-while loop"], "answer": "for loop"},
+            {"question": "What keyword is used to exit a loop prematurely in Python?", "options": ["break", "continue", "exit"], "answer": "break"},
+            {"question": "Which loop executes at least once regardless of the condition?", "options": ["for loop", "while loop", "do-while loop"], "answer": "do-while loop"},
+            {"question": "What keyword is used to skip the rest of the current iteration and move to the next iteration of the loop?", "options": ["break", "continue", "pass"], "answer": "continue"},
+            {"question": "Which loop is preferred when the number of iterations is known beforehand?", "options": ["for loop", "while loop", "do-while loop"], "answer": "for loop"}
+        ],
+
+        medium: [
+            {"question": "What is the output of range(5)?", "options": ["[0, 1, 2, 3, 4]", "[1, 2, 3, 4, 5]", "[0, 1, 2, 3, 4, 5]"], "answer": "[0, 1, 2, 3, 4]"},
+            {"question": "Which statement correctly creates an infinite loop in Python?", "options": ["while True:", "for i in range(inf):", "while (1 < 2):"], "answer": "while True:"},
+            {"question": "How can you iterate over both the index and value of a list simultaneously?", "options": ["Using enumerate()", "Using range()", "Using zip()"], "answer": "Using enumerate()"},
+            {"question": "What happens when a loop condition never becomes False?", "options": ["The loop runs infinitely", "The loop runs once", "The loop throws an error"], "answer": "The loop runs infinitely"},
+            {"question": "Which function generates a sequence of numbers in Python?", "options": ["range()", "list()", "sequence()"], "answer": "range()"}
+        ],
+
+        hard: [
+            {"question": "What is the time complexity of a nested loop where both loops run n times?", "options": ["O(n)", "O(n^2)", "O(log n)"], "answer": "O(n^2)"},
+            {"question": "Which Python function is used to apply a function to each item in an iterable?", "options": ["map()", "filter()", "reduce()"], "answer": "map()"},
+            {"question": "Which looping technique allows iterating over multiple lists simultaneously?", "options": ["zip()", "enumerate()", "map()"], "answer": "zip()"},
+            {"question": "What does the else block in a loop execute?", "options": ["When the loop terminates normally", "When the loop breaks", "At the start of the loop"], "answer": "When the loop terminates normally"},
+            {"question": "Which module provides iteration tools like cycle() and repeat()?", "options": ["itertools", "collections", "functools"], "answer": "itertools"}
+        ]
+        };
+            
+
+        let score = 0;
+        let currentQuestionIndex = 0;
+        let shuffledQuestions = [];
+        let selectedDifficulty = "";
+        let timer;
+        let timeLeft = 15;
+
+        function setDifficulty(level) {
+            selectedDifficulty = level;
+            document.getElementById('difficulty-selection').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            startQuiz();
+        }
+
+        function startQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            shuffledQuestions = [...questions[selectedDifficulty]].sort(() => Math.random() - 0.5);
+            document.getElementById('score').textContent = "Score: 0";
+            document.getElementById('play-again').style.display = 'none';
+            loadQuestion();
+        }
+
+        function startTimer() {
+            timeLeft = 10;
+            document.getElementById('timer').textContent = `Time Left: ${timeLeft}s`;
+
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = `Time Left: ${timeLeft}s`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    timeUp();
+                }
+            }, 1000);
+        }
+
+        function timeUp() {
+            document.getElementById('feedback').textContent = "⏳ Time's up! Moving to next question...";
+            document.getElementById('feedback').style.display = 'block';
+            document.querySelectorAll('.options button').forEach(btn => btn.disabled = true);
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                loadQuestion();
+            }, 1500);
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                clearInterval(timer);
+                startTimer();
+
+                const questionData = shuffledQuestions[currentQuestionIndex];
+                document.getElementById('question').textContent = questionData.question;
+                document.getElementById('progress').textContent = `Question ${currentQuestionIndex + 1} of ${shuffledQuestions.length}`;
+                document.getElementById('options').innerHTML = '';
+                document.getElementById('feedback').style.display = 'none';
+
+                questionData.options.forEach(option => {
+                    let button = document.createElement('button');
+                    button.textContent = option;
+                    button.onclick = () => {
+                        clearInterval(timer);
+                        checkAnswer(option, button);
+                    };
+                    document.getElementById('options').appendChild(button);
+                });
+            } else {
+                clearInterval(timer);
+                document.getElementById('question').textContent = "Quiz Completed!";
+                document.getElementById('progress').textContent = `Final Score: ${score}/${shuffledQuestions.length}`;
+                document.getElementById('play-again').style.display = 'block';
+            }
+        }
+
+        function checkAnswer(selected, button) {
+            let correctAnswer = shuffledQuestions[currentQuestionIndex].answer;
+            document.querySelectorAll('.options button').forEach(btn => btn.disabled = true);
+            let feedbackElement = document.getElementById('feedback');
+
+            if (selected === correctAnswer) {
+                button.style.background = '#4CAF50';
+                feedbackElement.textContent = "✅ Correct!";
+                score++;
+                document.getElementById('score').textContent = `Score: ${score}`;
+            } else {
+                button.style.background = '#FF5733';
+                feedbackElement.textContent = `❌ Wrong! Correct answer: ${correctAnswer}`;
+            }
+
+            feedbackElement.style.display = 'block';
+            setTimeout(() => { currentQuestionIndex++; loadQuestion(); }, 1500);
+        }
+        function restartQuiz() {
+            startQuiz();
+        }
+
+        function reselectDifficulty() {
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('difficulty-selection').style.display = 'block';
+         
+        }
+    </script>
+</body>
+</html>
